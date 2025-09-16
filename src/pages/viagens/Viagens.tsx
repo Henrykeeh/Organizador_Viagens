@@ -4,8 +4,8 @@ type Viagem = {
   id: number;
   origem: string;
   destino: string;
-  data: string; 
-  hora: string; 
+  data: string;
+  hora: string;
   plataforma: string;
 };
 
@@ -67,7 +67,18 @@ export default function Viagens() {
           createDateInSaoPaulo(b.data, b.hora).getTime()
       )
     );
-    setForm({ origem: "São Paulo", destino: "", data: new Date().toISOString().slice(0, 10), hora: "", plataforma: "" });
+    setForm({
+      origem: "São Paulo",
+      destino: "",
+      data: new Date().toISOString().slice(0, 10),
+      hora: "",
+      plataforma: "",
+    });
+  };
+
+  const clearAllViagens = () => {
+    setViagens([]);
+    localStorage.removeItem("viagens");
   };
 
   const viagensAtivas = viagens.filter(
@@ -82,7 +93,7 @@ export default function Viagens() {
     const diffMs = tripDate.getTime() - now.getTime();
     const diffMin = Math.floor(diffMs / 60000);
 
-    if (diffMs < 0) return "bg-gray-700 text-gray-200 opacity-80"; 
+    if (diffMs < 0) return "bg-gray-700 text-gray-200 opacity-80";
     if (diffMin <= 10) return "bg-red-600 text-white";
     if (diffMin <= 30) return "bg-yellow-400 text-gray-900";
     return "bg-green-400 text-gray-900";
@@ -149,8 +160,15 @@ export default function Viagens() {
             className="w-full p-3 border border-gray-600 rounded-lg text-sm bg-slate-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             required
           />
-          <button className="w-full bg-blue-900 text-white font-bold py-3 rounded-lg text-sm hover:bg-blue-950 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+          <button className="cursor-pointer w-full bg-blue-900 text-white font-bold py-3 rounded-lg text-sm hover:bg-blue-950 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
             Adicionar
+          </button>
+          <button
+            type="button"
+            onClick={clearAllViagens}
+            className="cursor-pointer w-full bg-red-800 text-white font-bold py-3 rounded-lg text-sm hover:bg-red-900 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 mt-2"
+          >
+            Limpar todas as viagens
           </button>
         </form>
 
@@ -196,7 +214,7 @@ export default function Viagens() {
               })}
             </div>
           </div>
-          
+
           <div>
             <h2 className="text-xl font-bold mb-3">Viagens Passadas</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
