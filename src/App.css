@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+input[type="date"],
+input[type="time"] {
+  cursor: pointer;
+}

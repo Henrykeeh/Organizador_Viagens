@@ -41,6 +41,10 @@ export default function Viagens() {
 
   const [now, setNow] = useState<Date>(new Date());
 
+  const deleteViagem = (id: number) => {
+    setViagens((prev) => prev.filter((v) => v.id !== id));
+  };
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -77,8 +81,10 @@ export default function Viagens() {
   };
 
   const clearAllViagens = () => {
-    setViagens([]);
-    localStorage.removeItem("viagens");
+    if (window.confirm("Tem certeza que deseja apagar todas as viagens?")) {
+      setViagens([]);
+      localStorage.removeItem("viagens");
+    }
   };
 
   const viagensAtivas = viagens.filter(
@@ -125,6 +131,13 @@ export default function Viagens() {
           className="bg-slate-800 bg-opacity-10 backdrop-filter backdrop-blur-md p-6 rounded-xl shadow-2xl space-y-4 border border-gray-700/50 md:col-span-1"
         >
           <h2 className="text-xl font-bold text-white mb-2">Adicionar Viagem</h2>
+          {/* Mostra a data no formato dd/mm/aaaa acima do input */}
+          {/* <label className="block text-sm text-gray-300 mb-1">
+            Data atual:{" "}
+            {form.data
+              ? form.data.split("-").reverse().join("/")
+              : ""}
+          </label> */}
           <input
             value={form.origem}
             onChange={(e) => setForm({ ...form, origem: e.target.value })}
@@ -183,11 +196,20 @@ export default function Viagens() {
                 return (
                   <div
                     key={v.id}
-                    className={`p-4 rounded-lg shadow-lg text-sm ${getCardColorClass(
+                    className={`relative p-4 rounded-lg shadow-lg text-sm ${getCardColorClass(
                       v.data,
                       v.hora
                     )}`}
                   >
+                    {/* Botão X */}
+                    <button
+                      onClick={() => deleteViagem(v.id)}
+                      className="cursor-pointer absolute top-2 right-2 text-black hover:text-red-500 font-bold text-lg"
+                      title="Remover viagem"
+                      type="button"
+                    >
+                      ×
+                    </button>
                     <div className="flex flex-col">
                       <p className="font-semibold text-base">
                         {v.origem} → {v.destino}
@@ -224,11 +246,20 @@ export default function Viagens() {
                 return (
                   <div
                     key={v.id}
-                    className={`p-4 rounded-lg shadow-lg text-sm ${getCardColorClass(
+                    className={`relative p-4 rounded-lg shadow-lg text-sm ${getCardColorClass(
                       v.data,
                       v.hora
                     )}`}
                   >
+                    {/* Botão X */}
+                    <button
+                      onClick={() => deleteViagem(v.id)}
+                      className="cursor-pointer absolute top-2 right-2 text-black hover:text-red-500 font-bold text-lg"
+                      title="Remover viagem"
+                      type="button"
+                    >
+                      ×
+                    </button>
                     <div className="flex flex-col">
                       <p className="font-semibold text-base">
                         {v.origem} → {v.destino}
