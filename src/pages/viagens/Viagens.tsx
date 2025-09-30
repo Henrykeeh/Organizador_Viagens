@@ -273,7 +273,7 @@ export default function Viagens() {
                           min="0"
                           value={v.passageiros}
                           onChange={(e) => updatePassageiros(v.id, e.target.value)}
-                          className={`w-10 p-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-black ${passageirosInputClass}`}
+                          className={`w-10 p-1 text-sm rounded-md focus:outline-none ${passageirosInputClass}`}
                         />
                       </div>
                       <div className="flex flex-col items-end font-mono text-sm font-bold text-right leading-tight">
