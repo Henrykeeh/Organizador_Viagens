@@ -7,12 +7,25 @@ type Viagem = {
   data: string;
   hora: string;
   plataforma: string;
+  passageiros: string;
 };
 
 // Fuso de Brasília
 const createDateInSaoPaulo = (dateStr: string, timeStr: string) => {
   return new Date(`${dateStr}T${timeStr}:00.000-03:00`);
 };
+
+const getTodayInSaoPaulo = () => {
+  const now = new Date();
+
+  // Converte para string no fuso de São Paulo (formato dd/mm/aaaa)
+  const parts = now.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }).split("/");
+
+  // Reorganiza para yyyy-MM-dd (padrão do input date)
+  const [dia, mes, ano] = parts;
+  return `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+};
+
 
 // Countdown legível a partir da diferença em ms
 const formatCountdown = (diffMs: number) => {
@@ -34,9 +47,10 @@ export default function Viagens() {
   const [form, setForm] = useState<Omit<Viagem, "id">>({
     origem: "São Paulo",
     destino: "",
-    data: new Date().toISOString().slice(0, 10),
+    data: getTodayInSaoPaulo(),
     hora: "",
     plataforma: "",
+    passageiros: "",
   });
 
   const [now, setNow] = useState<Date>(new Date());
@@ -44,6 +58,15 @@ export default function Viagens() {
   const deleteViagem = (id: number) => {
     setViagens((prev) => prev.filter((v) => v.id !== id));
   };
+
+  const updatePassageiros = (id: number, value: string) => {
+    setViagens((prev) =>
+      prev.map((v) =>
+        v.id === id ? { ...v, passageiros: value } : v
+      )
+    );
+  };
+
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -74,9 +97,10 @@ export default function Viagens() {
     setForm({
       origem: "São Paulo",
       destino: "",
-      data: new Date().toISOString().slice(0, 10),
+      data: getTodayInSaoPaulo(),
       hora: "",
       plataforma: "",
+      passageiros: "",
     });
   };
 
@@ -170,6 +194,15 @@ export default function Viagens() {
             value={form.plataforma}
             onChange={(e) => setForm({ ...form, plataforma: e.target.value })}
             placeholder="Plataforma"
+            type="number"
+            className="w-full p-3 border border-gray-600 rounded-lg text-sm bg-slate-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            required
+          />
+          <input
+            value={form.passageiros}
+            onChange={(e) => setForm({ ...form, passageiros: e.target.value })}
+            placeholder="Número de Passageiros"
+            type="number"
             className="w-full p-3 border border-gray-600 rounded-lg text-sm bg-slate-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             required
           />
@@ -193,6 +226,9 @@ export default function Viagens() {
               {viagensAtivas.map((v) => {
                 const tripDate = createDateInSaoPaulo(v.data, v.hora);
                 const diffMs = tripDate.getTime() - now.getTime();
+                const cardColorClass = getCardColorClass(v.data, v.hora);
+                const passageirosTextClass = cardColorClass.includes("bg-red-600") ? "text-white" : "text-black";
+                const passageirosInputClass = cardColorClass.includes("bg-red-600") ? "text-white" : "text-black";
                 return (
                   <div
                     key={v.id}
@@ -210,7 +246,7 @@ export default function Viagens() {
                     >
                       ×
                     </button>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-1">
                       <p className="font-semibold text-base">
                         {v.origem} → {v.destino}
                       </p>
@@ -226,10 +262,36 @@ export default function Viagens() {
                       </p>
                       <p className="text-xs">Plataforma {v.plataforma}</p>
                     </div>
-                    <div className="mt-2 text-right">
-                      <p className="font-mono text-lg font-bold">
-                        {formatCountdown(diffMs)}
-                      </p>
+                    {/* Alinhamento passageiros e countdown */}
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="flex flex-row items-center gap-2">
+                        <span className={`text-xs flex items-center gap-1 ${passageirosTextClass}`}>
+                          <span role="img" aria-label="Passageiros">👤</span> Passageiros
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={v.passageiros}
+                          onChange={(e) => updatePassageiros(v.id, e.target.value)}
+                          className={`w-10 p-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-black ${passageirosInputClass}`}
+                        />
+                      </div>
+                      <div className="flex flex-col items-end font-mono text-sm font-bold text-right leading-tight">
+                        {(() => {
+                          const countdown = formatCountdown(diffMs);
+                          if (countdown === "Já passou") {
+                            return <span>{countdown}</span>;
+                          }
+                          // Remove "Faltam " do início e separa o restante
+                          const [prefix, ...rest] = countdown.split(" ");
+                          return (
+                            <>
+                              <span>{prefix}</span>
+                              <span>{rest.join(" ")}</span>
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 );
@@ -260,7 +322,8 @@ export default function Viagens() {
                     >
                       ×
                     </button>
-                    <div className="flex flex-col">
+
+                    <div className="flex flex-col gap-1">
                       <p className="font-semibold text-base">
                         {v.origem} → {v.destino}
                       </p>
@@ -276,16 +339,37 @@ export default function Viagens() {
                       </p>
                       <p className="text-xs">Plataforma {v.plataforma}</p>
                     </div>
-                    <div className="mt-2 text-right">
-                      <p className="font-mono text-lg font-bold">
-                        {formatCountdown(diffMs)}
-                      </p>
+
+                    {/* Alinhamento passageiros e countdown igual às ativas */}
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="flex flex-row items-center gap-2">
+                        <span className="text-xs text-black flex items-center gap-1">
+                          <span role="img" aria-label="Passageiros">👤</span> Passageiros:
+                        </span>
+                        <span className="text-sm font-semibold text-black">{v.passageiros}</span>
+                      </div>
+                      <div className="flex flex-col items-end font-mono text-sm font-bold text-right leading-tight">
+                        {(() => {
+                          const countdown = formatCountdown(diffMs);
+                          if (countdown === "Já passou") {
+                            return <span>{countdown}</span>;
+                          }
+                          const [prefix, ...rest] = countdown.split(" ");
+                          return (
+                            <>
+                              <span>{prefix}</span>
+                              <span>{rest.join(" ")}</span>
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
+
         </div>
       </div>
     </div>
